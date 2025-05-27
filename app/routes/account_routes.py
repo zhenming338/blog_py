@@ -28,8 +28,10 @@ def register():
     return Result.success("register success").to_dict_json()
 
 
+@account_dp.route("/getUserInfo", methods=["GET"])
 def get_user_info():
-    pass
+    user_info = account_service.get_user_info()
+    return Result.success("get userInfo success", user_info.to_dict()).to_dict_json()
 
 
 @account_dp.route("/getUsers", methods=["GET"])

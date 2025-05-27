@@ -1,15 +1,14 @@
-from dataclasses import asdict
-
 from app.dao import account_dao
-from flask_jwt_extended import create_access_token
-from datetime import timedelta
-from app.utils import encrypt_util
+from flask import g
 from app.exception.account_exceptions import (
     UserAccessInvalidException,
     UserNotFoundException,
 )
-from app.utils.encrypt_util import bcrypt_encode
 from app.extensions import db
+from app.utils import encrypt_util
+from app.utils.encrypt_util import bcrypt_encode
+from app.utils.jwt_util import JWTUtil
+
 
 def login(data):
     print(data)
@@ -24,7 +23,7 @@ def login(data):
         raise UserNotFoundException("user is not exists")
     if not encrypt_util.bcrypt_check(password, user.password):
         raise UserAccessInvalidException("password is invalid")
-    return create_access_token(identity=user.id, expires_delta=timedelta(hours=1))
+    return JWTUtil.generate_token({"id": user.id, "roleId": role_id})
 
 
 def get_roles() -> list:
@@ -49,3 +48,10 @@ def register(data):
         db.session.rollback()
         print(e.__str__())
         raise UserAccessInvalidException(str(e))
+
+
+def get_user_info():
+    user_id = g.get("user_info", {}).get("id")
+    user_info = account_dao.get_user_by_id(user_id)
+    user_info.password = "**************"
+    return user_info

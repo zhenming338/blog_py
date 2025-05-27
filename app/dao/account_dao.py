@@ -47,3 +47,13 @@ def add_user(data) -> int:
 def add_role_user_record(user_id, role_id):
     sql = text("insert into user_role(role_id, user_id) values (:role_id, :user_id)")
     db.session.execute(sql, {"role_id": role_id, "user_id": user_id})
+
+
+def get_user_by_id(user_id):
+    sql = text("select * from user where id = :id")
+    result = db.session.execute(sql, {"id": user_id})
+    first_row = result.mappings().first()
+    if first_row is None:
+        return None
+    user = User.from_dict(first_row)
+    return user
