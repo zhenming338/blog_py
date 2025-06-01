@@ -14,16 +14,15 @@ def login(data):
     print(data)
     username = data["username"]
     password = data["password"]
-    email = data["email"]
-    role_id = data["roleId"]
-    print(email)
+    roleName = data["role"]
     user = account_dao.get_user_by_username(username)
+    role = account_dao.get_role_by_name(roleName)
     print(user)
     if user is None:
         raise UserNotFoundException("user is not exists")
     if not encrypt_util.bcrypt_check(password, user.password):
         raise UserAccessInvalidException("password is invalid")
-    return JWTUtil.generate_token({"id": user.id, "roleId": role_id})
+    return JWTUtil.generate_token({"id": user.id, "roleId": role.id})
 
 
 def get_roles() -> list:

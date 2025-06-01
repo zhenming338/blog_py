@@ -9,11 +9,12 @@ migrate = Migrate()
 
 
 def register_exception_handlers(app):
-
     @app.errorhandler(UserNotFoundException)
     def handler_user_not_found(error):
+        print(error)
         return Result.fail(str(error)).to_dict_json()
 
     @app.errorhandler(UserAccessInvalidException)
     def handler_user_access_invalid(error):
+        print(error)
         return Result.fail(str(error)).to_dict_json()

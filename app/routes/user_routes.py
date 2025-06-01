@@ -1,57 +1,45 @@
-from flask import Blueprint,request,jsonify
-from app.models.user import User
-from app.extensions import db
-from sqlalchemy.exc import IntegrityError
-from flask_jwt_extended import create_access_token
-from datetime import timedelta
-user_dp=Blueprint("t_users",__name__)
+from flask import Blueprint, request, jsonify
+from sqlalchemy import text
 
-@user_dp.route("/login",methods=["POST"])
+from app.extensions import db
+from app.services import account_service
+from ..common.result import Result
+
+user_dp = Blueprint("/api/user", __name__)
+
+
+@user_dp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    email=data.get("email")
-    user=User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"msg":"invaild email"}),401
-    token = create_access_token(identity=user.id,expires_delta=timedelta(hours=1))
-    return jsonify({"access_token":token})
+    token = account_service.login(data)
+    return Result.success("login success", token).to_dict_json()
 
-@user_dp.route("/",methods=['GET'])
-def list_users():
-    users = User.query.all()
-    return jsonify([
-        {
-            "id":u.id,
-            "name":u.name,
-            "email":u.email
-        } for u in users
-    ])
 
-@user_dp.route("/",methods=['POST'])
-def add_user():
-    data=request.get_json()
-    user=User(name=data['name'])
-   
+@user_dp.route("/getRoleList", methods=["GET"])
+def get_roles():
+    dict_roles = account_service.get_roles()
+    return Result.success("get success", dict_roles).to_dict_json()
+
+
+@user_dp.route("/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    account_service.register(data)
+    return Result.success("register success").to_dict_json()
+
+
+@user_dp.route("/getUserInfo", methods=["GET"])
+def get_user_info():
+    user_info = account_service.get_user_info()
+    return Result.success("get userInfo success", user_info.to_dict()).to_dict_json()
+
+
+@user_dp.route("/getUsers", methods=["GET"])
+def get_users():
     try:
-        db.session.add(user)
-        db.session.commit()
-    except IntegrityError:
-       var = db.session.rollback
-       return {"error":"Email already exists"},400
-    return jsonify({"msg":"User added ","id":User.id}),201
-
-@user_dp.route("/<int:user_id>",methods=['PUT'])
-def update_user(user_id):
-    data=request.get_json()
-    user=User.query.get_or_404(user_id)
-    user.name=data['name']
-    user.email=data['email']
-    db.session.commit()
-    return jsonify({"msg":"User updated"})
-
-@user_dp.route("/<int:user_id>",methods=['DELETE'])
-def delete_user(user_id):
-    user=User.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({"msg":"user deleted"})
+        sql = text("SELECT * FROM user")
+        result = db.session.execute(sql)
+        users = [dict(row) for row in result.mappings().all()]
+        return jsonify({"code": 200, "data": users})
+    except Exception as e:
+        return jsonify({"code": 500, "message": str(e)})

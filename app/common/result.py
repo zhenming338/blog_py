@@ -9,11 +9,11 @@ class Result:
 
     @staticmethod
     def success(message, data=None):
-        return Result(code=200, message=message, data=data)
+        return Result(code=0, message=message, data=data)
 
     @staticmethod
     def fail(message):
-        return Result(code=500, message=message)
+        return Result(code=1, message=message)
 
     def __repr__(self):
         return f"<Result  code={self.code} , message={self.message}, data={self.data}>"

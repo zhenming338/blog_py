@@ -57,3 +57,27 @@ def get_user_by_id(user_id):
         return None
     user = User.from_dict(first_row)
     return user
+
+
+def get_role_by_name(roleName):
+    sql = text("select * from role where name = :roleName")
+    result = db.session.execute(sql, {"roleName": roleName})
+    first_row = result.mappings().first()
+    if first_row is None:
+        return None
+    role = Role.from_dict(first_row)
+    return role
+
+
+def searchByName(authorName):
+    sql = text("select * from user")
+    result = db.session.execute(sql)
+    if authorName != "":
+        authorName = "%" + authorName + "%"
+        sql = text("select * from user where username like :authorName")
+        result = db.session.execute(sql, {"authorName": authorName})
+    first_row = result.mappings().first()
+    if first_row is None:
+        return None
+    user = User.from_dict(first_row)
+    return user

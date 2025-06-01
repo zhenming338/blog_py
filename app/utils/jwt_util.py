@@ -2,6 +2,7 @@ import jwt
 import datetime
 from typing import Optional, Dict
 
+
 class JWTUtil:
     SECRET_KEY = 'your-secret-key'  # 建议使用环境变量管理
     ALGORITHM = 'HS256'
@@ -28,11 +29,6 @@ class JWTUtil:
         :param token: JWT字符串
         :return: 解码后的payload字典，若验证失败则返回None
         """
-        try:
-            decoded = jwt.decode(token, cls.SECRET_KEY, algorithms=[cls.ALGORITHM])
-            return decoded
-        except jwt.ExpiredSignatureError:
-            print("Token已过期")
-        except jwt.InvalidTokenError:
-            print("无效的Token")
-        return None
+
+        decoded = jwt.decode(token, cls.SECRET_KEY, algorithms=[cls.ALGORITHM])
+        return decoded
